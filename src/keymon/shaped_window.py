@@ -69,20 +69,20 @@ class ShapedWindow(gtk.Window):
     pos = self.get_position()
     if pos[0] != new_x or pos[1] != new_y:
       self.move(new_x, new_y)
-      self.show()
+    self.show()
 
   def show(self):
     """Show this mouse indicator and ignore awaiting fade away request."""
-    if self.timeout_timer and self.shown:
+    if self.timeout_timer:
       # There is a fade away request, ignore it
       gobject.source_remove(self.timeout_timer)
-      self.timeout_timer = None
+      self.timeout_timer = gobject.timeout_add(int(self.timeout * 1000), self.hide)
       # This method only is called when mouse is pressed, so there will be a
       # release and fade_away call, no need to set up another timer.
     super(ShapedWindow, self).show()
 
   def maybe_show(self):
-    if self.shown or not self.timeout_timer:
+    if self.shown:
       return
     self.shown = True
     self.show()
@@ -90,5 +90,5 @@ class ShapedWindow(gtk.Window):
   def fade_away(self):
     """Make the window fade in a little bit."""
     # TODO this isn't doing any fading out
-    self.shown = False
+    self.shown = True
     self.timeout_timer = gobject.timeout_add(int(self.timeout * 1000), self.hide)
